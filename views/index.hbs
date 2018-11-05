@@ -1,0 +1,80 @@
+<h1 style="color:#003300"> Socket IO test</h1>
+<p style="color:#08DB08" id="WelcomeMessage">Welcome to {{title}}</p>
+
+
+<div id="MessagesContainer" style="display: none">
+    <ul id="messages" style="list-style: none"></ul>
+    <label for="input" style="color:#08DB08 ">Message: </label>
+    <input class="textBox" type="text" id="input">
+    <button id="button" class="myButton" onclick="sendMessage()">Send</button>
+</div>
+
+
+<div id="UsernameContainer">
+    <label for="username" style="color:#08DB08 ">Username: </label>
+    <input class="textBox" type="text" id="username">
+    <button id="usernameBtn" class="myButton" onclick="setUsername()">Send</button>
+</div>
+
+
+<script src="/javascripts/socket.io.js"></script>
+<script type='text/javascript'>
+
+    let username = null;
+    var socket = io('http://192.168.1.35:3001');
+
+    //Set username
+    function setUsername() {
+        socket.emit('setUsername', $('#username').val(), (_username) => {
+            username = _username;
+            $('#WelcomeMessage').fadeOut(0);
+            $('#WelcomeMessage').html('Welcome ' + _username);
+            $('#WelcomeMessage').fadeIn(500);
+            $('#UsernameContainer').fadeOut(0);
+            $('#MessagesContainer').fadeIn(2000);
+        });
+    }
+
+    //Send message to server
+    function sendMessage() {
+
+        if ($('#input').val().replace(/\s/g, '').length > 0) {
+
+            socket.emit('message', $('#input').val());
+        }
+
+        $('#input').val('');
+
+    }
+
+    //Messages coming from server
+    socket.on('message', (data) => {
+        if (data.username === username) {
+            $('#messages').append('<li class="myMessage">You: ' + data.message + '</li>');
+        } else {
+            $('#messages').append('<li class="otherMessage">' + data.username + ': ' + data.message + '</li>');
+        }
+
+    });
+
+
+    document.getElementById("input")
+            .addEventListener("keyup", function (event) {
+                event.preventDefault();
+                if (event.keyCode === 13) {
+                    document.getElementById("button").click();
+                }
+            });
+
+    document.getElementById("username")
+            .addEventListener("keyup", function (event) {
+                event.preventDefault();
+                if (event.keyCode === 13) {
+                    document.getElementById("usernameBtn").click();
+                }
+            });
+
+
+</script>
+
+
